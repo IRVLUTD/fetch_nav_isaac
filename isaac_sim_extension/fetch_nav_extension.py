@@ -1,6 +1,7 @@
 import sys
 import time
 
+# import omni
 sys.path.append("/home/sauravdosi/.local/share/ov/pkg/isaac_sim-2023.1.1/exts/omni.isaac.synthetic_utils")
 sys.path.append("/home/sauravdosi/.local/share/ov/pkg/isaac_sim-2023.1.1/exts/omni.kit.editor")
 
@@ -10,14 +11,16 @@ from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.wheeled_robots.robots import WheeledRobot
+from omni.isaac.wheeled_robots.controllers import WheelBasePoseController
+from omni.isaac.wheeled_robots.controllers.differential_controller import DifferentialController
 import carb
 import numpy as np
 from omni.isaac.sensor import Camera
 import omni.isaac.core.utils.numpy.rotations as rot_utils
 import matplotlib.pyplot as plt
 import cv2
-
-# import omni
+from omni.isaac.core.articulations import Articulation
+import omni
 from omni.kit.viewport.utility import get_active_viewport
 from omni.isaac.synthetic_utils import SyntheticDataHelper
 import asyncio
@@ -36,6 +39,11 @@ class HelloWorld(BaseSample):
         self._i = 1
         self._time = time.time()
         self._current_frame = None
+        self._wheel_radius = 0.06
+        self._wheel_base = 0.37476
+        self._forward_const_vel = 3
+        self._timesteps_counter = 0
+        self._number_of_timesteps = 0
         return
 
     def setup_scene(self):
@@ -76,13 +84,13 @@ class HelloWorld(BaseSample):
             )
         )
 
-        self._camera = Camera(
-            prim_path="/World/fetch/head_tilt_link/head_camera_link/camera",
-            frequency=30,
-            resolution=(1024, 1024)
-        )
+        # self._camera = Camera(
+        # prim_path="/World/fetch/head_tilt_link/head_camera_link/camera",
+        # frequency=30,
+        # resolution=(1024, 1024)
+        # )
 
-        self._camera.initialize()
+        # self._camera.initialize()
 
         print("Init camera")
         # self.camera_feed()
@@ -126,12 +134,12 @@ class HelloWorld(BaseSample):
 
         # print(sdh.get_groundtruth(['rgb', 'depth', 'boundingBox2DTight'], viewport))
 
-        prim = stage.GetPrimAtPath("/World/fetch/head_tilt_link/head_camera_link/camera")
+        # prim = stage.GetPrimAtPath("/World/fetch/head_tilt_link/head_camera_link/camera")
 
         # # -------------------------------------------------------------------
         # viewport.set_active_camera(str(prim.GetPath()))
-        print(viewport.get_active_camera())
-        print(sdh.get_groundtruth(['camera'], viewport))
+        # print(viewport.get_active_camera())
+        # print(sdh.get_groundtruth(['camera'], viewport))
 
         f_stop = threading.Event()
         # start calling f now and every 60 sec thereafter
@@ -200,6 +208,10 @@ class HelloWorld(BaseSample):
 
         print("Num of degrees of freedom before first reset: " + str(self._fetchbot.num_dof))  # prints None
         # print(f"NEW: {robot.num_dof}")
+        position, orientation = self._fetchbot.get_world_pose()
+        print(f"Initial Position: {position}")
+        print(f"Initial Orientation:  + {orientation}")
+
         return
 
     def _get_camera_stream(self, f_stop):
@@ -273,8 +285,15 @@ class HelloWorld(BaseSample):
         #             0, 0, 0, # end gripper, last two wheels
         #             0, 0, 0])))
         print("HEY")
-        self._world.add_physics_callback("sending_actions", callback_fn=self.move_robot)
+        self._my_controller = WheelBasePoseController(name="cool_controller",
+                                                      open_loop_wheel_controller=DifferentialController(
+                                                          name="simple_controller",
+                                                          wheel_radius=self._wheel_radius, wheel_base=self._wheel_base),
+                                                      is_holonomic=False)
+        # self._world.add_physics_callback("sending_actions", callback_fn=self.move_robot)
         # self._world.add_physics_callback("getting camera feed", callback_fn=self.get_camera_feed)
+        self._world.add_physics_callback("differential controller", callback_fn=self.diff_move_robot)
+        # self.custom_move_robot(x_dist=2)
         return
 
     async def setup_post_reset(self):
@@ -298,6 +317,10 @@ class HelloWorld(BaseSample):
         self._fetchbot_articulation_controller.apply_action(ArticulationAction(joint_positions=positions))
         return
 
+    def find_prims_by_name(self, stage, prim_name: str):
+        found_prims = [x for x in stage.Traverse() if x.GetName() == prim_name]
+        return found_prims
+
     def move_robot(self, step_size=0.1):
         values = 5 * np.array([0, 0, 0,  # shoulder, elbow, shoulder
                                0, 0, 0,  # elbow, shoulder, wrist
@@ -315,3 +338,60 @@ class HelloWorld(BaseSample):
             # print("Joint Positions after execution: " + str(self._fetchbot.get_joint_positions()))
         # print(f"output: {self._output}")
         return
+
+    def diff_move_robot(self, step_size=0.1):
+        stage = omni.usd.get_context().get_stage()
+        prim_path = "/World/fetch/base_link"
+        prim = Articulation(prim_path=prim_path, name="base_link")
+        position, orientation = prim.get_world_pose()
+
+        # position, orientation = self._fetchbot.get_world_pose()
+        print(f"Position: {position}")
+        print(f"Orientation:  {orientation}")
+        # self._fetchbot.apply_action(self._my_controller.forward(start_position=position,
+        #                                                     start_orientation=orientation,
+        #                                                     goal_position=np.array([0.8, 0.8])))
+        # print(orientation)
+        control_output = self._my_controller.forward(start_position=position, start_orientation=orientation,
+                                                     goal_position=np.array([-2, -1]))
+        # print(control_output)
+
+        wheel_velocities = control_output.joint_velocities
+        control_output.joint_velocities = np.array([0, 0, 0,  # shoulder, elbow, shoulder
+                                                    0, 0, 0,  # elbow, shoulder, wrist
+                                                    0, 0, 0,  # ,,head pan
+                                                    0, wheel_velocities[0], wheel_velocities[1],
+                                                    # end gripper, last two wheels
+                                                    0, 0, 0])
+        self._fetchbot.apply_action(control_output)
+
+    def custom_move_robot(self, x_dist):
+        self._number_of_timesteps = 83.73456 * x_dist / (self._forward_const_vel * self._wheel_radius)
+        print(self._number_of_timesteps)
+        self._timesteps_counter = 0
+        self._world.add_physics_callback("differential controller", callback_fn=self.move_robot_simple)
+        # self._number_of_timesteps = 0
+
+    def move_robot_simple(self, step_size=0.01):
+        # print(time.time())
+        print(self._timesteps_counter)
+        # print(self._number_of_timesteps)
+        values = np.array([0, 0, 0,  # shoulder, elbow, shoulder
+                           0, 0, 0,  # elbow, shoulder, wrist
+                           0, 0, 0,  # ,,head pan
+                           0, self._forward_const_vel, self._forward_const_vel,  # end gripper, last two wheels
+                           0, 0, 0])
+        self._fetchbot_articulation_controller.apply_action(ArticulationAction(joint_positions=None,
+                                                                               joint_efforts=None,
+                                                                               joint_velocities=values))
+        self._timesteps_counter += 1
+        if self._timesteps_counter >= self._number_of_timesteps:
+            print("STOP")
+            values = np.array([0, 0, 0,  # shoulder, elbow, shoulder
+                               0, 0, 0,  # elbow, shoulder, wrist
+                               0, 0, 0,  # ,,head pan
+                               0, 0, 0,  # end gripper, last two wheels
+                               0, 0, 0])
+            self._fetchbot_articulation_controller.apply_action(ArticulationAction(joint_positions=None,
+                                                                                   joint_efforts=None,
+                                                                                   joint_velocities=values))
