@@ -16,7 +16,7 @@ class MoveFetch:
         self._base_prim = Articulation(prim_path=base_prim_path, name=base_name)
         self._fetchbot = fetchbot
 
-    def diff_move_fetch(self):
+    def diff_move_fetch(self, step_size=0.01):
         position, orientation = self._base_prim.get_world_pose()
         control_output = self._wbp_controller.forward(start_position=position, start_orientation=orientation,
                                                      goal_position=np.array([-2, -1]))

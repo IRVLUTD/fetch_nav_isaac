@@ -10,14 +10,13 @@ class FetchNavDriver:
         self._simulation_app = SimulationApp(launch_config={"renderer": "RayTracedLighting", "headless": False})
         from omni.isaac.core import World
         self._world = World()
-        self._fetch_nave_init = FetchNavInit(self._world)
-        self._fetch_nav_controller = MoveFetch(fetchbot=self._fetch_nave_init._fetchbot,
-                                               wheel_radius=self._fetch_nave_init._wheel_radius,
-                                               wheel_base=self._fetch_nave_init._wheel_base,
-                                               base_prim_path=self._fetch_nave_init._base_prim_path,
-                                               base_name=self._fetch_nave_init._base_name)
-        # for _ in range(50):
-        #     self._simulation_app.update()
+        self._fetch_nav_init = FetchNavInit(self._world)
+        self._fetch_nav_controller = MoveFetch(fetchbot=self._fetch_nav_init._fetchbot,
+                                               wheel_radius=self._fetch_nav_init._wheel_radius,
+                                               wheel_base=self._fetch_nav_init._wheel_base,
+                                               base_prim_path=self._fetch_nav_init._base_prim_path,
+                                               base_name=self._fetch_nav_init._base_name)
+
         # while True:
         #     self._simulation_app.update()
         #     if cv2.waitKey(0) == ord("q"):
@@ -25,17 +24,25 @@ class FetchNavDriver:
         #         break
         # except KeyboardInterrupt:
         #     pass
-        self._fetch_nave_init._simulation_context.play()
-        self._world.add_physics_callback("differential controller",
-                                         callback_fn=self._fetch_nav_controller.diff_move_fetch)
-        input_thread = threading.Thread(target=self.input_thread)
         execution_thread = threading.Thread(target=self.execution_thread)
 
-        execution_thread.start()
+        # execution_thread.start()
+        self._fetch_nav_init._simulation_context.initialize_physics()
+        self._fetch_nav_init._simulation_context.add_physics_callback("differential controller",
+                                         callback_fn=self._fetch_nav_controller.diff_move_fetch)
+        for _ in range(50):
+            self._fetch_nav_init._simulation_context.render()
+        # self..stop()
+        self._fetch_nav_init._simulation_context.play()
+
+        while True:
+            self._simulation_app.update()
+        input_thread = threading.Thread(target=self.input_thread)
+
         # input_thread.start()
 
         # input_thread.join()
-        execution_thread.join()
+        # execution_thread.join()
 
     def input_thread(self):
         print("Input thread started.")
