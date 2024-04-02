@@ -11,11 +11,7 @@ class FetchNavDriver:
         from omni.isaac.core import World
         self._world = World()
         self._fetch_nav_init = FetchNavInit(self._world)
-        self._fetch_nav_controller = MoveFetch(fetchbot=self._fetch_nav_init._fetchbot,
-                                               wheel_radius=self._fetch_nav_init._wheel_radius,
-                                               wheel_base=self._fetch_nav_init._wheel_base,
-                                               base_prim_path=self._fetch_nav_init._base_prim_path,
-                                               base_name=self._fetch_nav_init._base_name)
+        self._fetch_nav_controller = MoveFetch(fetch_nav_init=self._fetch_nav_init)
 
         # while True:
         #     self._simulation_app.update()
@@ -24,20 +20,21 @@ class FetchNavDriver:
         #         break
         # except KeyboardInterrupt:
         #     pass
-        execution_thread = threading.Thread(target=self.execution_thread)
+        # execution_thread = threading.Thread(target=self.execution_thread)
 
         # execution_thread.start()
-        self._fetch_nav_init._simulation_context.initialize_physics()
-        self._fetch_nav_init._simulation_context.add_physics_callback("differential controller",
+        self._fetch_nav_controller.goal_position = np.array([1, -1])
+        self._fetch_nav_init.simulation_context.initialize_physics()
+        self._fetch_nav_init.simulation_context.add_physics_callback("differential controller",
                                          callback_fn=self._fetch_nav_controller.diff_move_fetch)
         for _ in range(50):
-            self._fetch_nav_init._simulation_context.render()
+            self._fetch_nav_init.simulation_context.render()
         # self..stop()
-        self._fetch_nav_init._simulation_context.play()
+        self._fetch_nav_init.simulation_context.play()
 
         while True:
             self._simulation_app.update()
-        input_thread = threading.Thread(target=self.input_thread)
+        # input_thread = threading.Thread(target=self.input_thread)
 
         # input_thread.start()
 
