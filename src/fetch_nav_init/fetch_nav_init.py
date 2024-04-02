@@ -1,9 +1,6 @@
 from configparser import ConfigParser
 import os
 import ast
-from omni.isaac.wheeled_robots.robots import WheeledRobot
-from omni.isaac.sensor import Camera
-
 
 class FetchNavInit:
     def __init__(self, world, config_path="./config/config.ini"):
@@ -29,6 +26,7 @@ class FetchNavInit:
         self.init_sensors()
 
     def init_scene(self):
+        from omni.isaac.wheeled_robots.robots import WheeledRobot
         self._world.scene.add_default_ground_plane()
         self._fetchbot = self._world.scene.add(WheeledRobot(
                 prim_path=self._fetch_prim_path,
@@ -38,9 +36,11 @@ class FetchNavInit:
                 usd_path=self._fetch_usd_path
             )
         )
+        # self._world.step(render=True)
         print("Fetch initialized")
 
     def init_sensors(self):
+        from omni.isaac.sensor import Camera
         self._camera = Camera(
         prim_path=self._camera_prim_path,
         frequency=self._camera_fps,
