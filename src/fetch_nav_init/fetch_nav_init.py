@@ -11,12 +11,18 @@ class FetchNavInit:
         self._fetch_usd_path = os.path.join(self._fetch_usd_dir, self._fetch_usd_name)
         self._fetch_prim_path = self._config.get("FETCH_INIT", "fetch_prim_path")
         self._fetch_name = self._config.get("FETCH_INIT", "fetch_name")
+        self._base_prim_path = self._config.get("FETCH_INIT", "base_prim_path")
+        self._base_name = self._config.get("FETCH_INIT", "base_name")
         self._wheel_radius = float(self._config.get("FETCH_INIT", "wheel_radius"))
         self._wheel_base = float(self._config.get("FETCH_INIT", "wheel_base"))
         self._wheel_names_dict = ast.literal_eval(self._config.get("FETCH_INIT", "wheel_names_dict"))
         self._camera_prim_path = self._config.get("SENSORS_INIT", "camera_prim_path")
         self._camera_fps = int(self._config.get("SENSORS_INIT", "camera_fps"))
         self._camera_resolution = ast.literal_eval(self._config.get("SENSORS_INIT", "camera_resolution"))
+
+        from omni.isaac.core import SimulationContext
+
+        self._simulation_context = SimulationContext(stage_units_in_meters=1.0)
 
         self._world = world
         self._fetchbot = None
