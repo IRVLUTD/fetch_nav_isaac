@@ -19,3 +19,9 @@ Path to the Isaac Sim python would be of the following format:
 
 Execute the following script to launch the driver to navigate Fetch:
 `<path to isaac sim python> -m src.launch.fetch_nav_driver`
+
+## Troubleshooting
+
+In case of an 150 (GLX) error, execute the following command:
+
+`export MESA_GL_VERSION_OVERRIDE=4.6`
