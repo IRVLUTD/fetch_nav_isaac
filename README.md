@@ -8,10 +8,16 @@ A repository that stores the codebase for Python Interface to control Fetch Robo
 ## Current Features:
 
 1. Initialization of Fetch to move its base on a ground plane in Isaac Sim. The arm and the RGB camera are both initialized.
-2. Capability of moving the base to a given global position.
+2. Capability of moving the base to a given global position (x, y) within a given position tolerance (current best is 0.01 metres).
 3. Receiving a stream of images from the RGB camera attached to the prim: `head_tilt_link/head_camera_link`.
 4. Synthetic data generation such as 2D and 3D bounding box detection and rudimentary segmentation
 using the Isaac Sim's built-in libraries.
+
+## Config:
+
+All the configuration parameters are stored under `/config/config.ini`
+ file. These could be changed as per the need of the application. 
+Make sure that all the paths and the file names are correct.
 
 ## Execution:
 Path to the Isaac Sim python would be of the following format:
@@ -19,6 +25,15 @@ Path to the Isaac Sim python would be of the following format:
 
 Execute the following script to launch the driver to navigate Fetch:
 `<path to isaac sim python> -m src.launch.fetch_nav_driver`
+
+### 1. Move Fetch around:
+
+- Enter the global target position coordinates (x, y) in the terminal after executing the python script mentioned above. 
+- The script calculates the corrected coordinates to reduce the error of about 0.06 metres from the built-in Differential Controller to less than 0.01 metres. 
+- Wait for our friend to reach its destination. 
+- Repeat as many times as you like. 
+
+Congratulations, you are now commanding a robot.
 
 ## Troubleshooting
 
