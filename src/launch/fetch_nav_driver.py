@@ -40,7 +40,7 @@ class FetchNavDriver:
             corrected_goal_position = np.array([x_cord, y_cord])
             self._fetch_nav_controller.goal_position = corrected_goal_position
 
-            print(f"Moving Fetch to ({x}, {y}) ...")
+            print(f"Moving Fetch to ({x}, {y})...")
             self.execute_move_base(original_goal_position)
 
     def correct_coordinates(self, x, y, current_x, current_y):
@@ -63,7 +63,7 @@ class FetchNavDriver:
             self._fetch_nav_init.simulation_context.step(render=True)
             fetch_current_position = self._fetch_nav_controller.fetch_position[:2]
 
-        print(f"Reached ({original_goal_position[0]}, {original_goal_position[1]}) ...")
+        print(f"Reached ({fetch_current_position[0]}, {fetch_current_position[1]})...")
 
 
 fetch_driver = FetchNavDriver()
