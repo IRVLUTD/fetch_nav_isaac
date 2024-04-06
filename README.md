@@ -35,6 +35,12 @@ Execute the following script to launch the driver to navigate Fetch:
 
 Congratulations, you are now commanding a robot.
 
+Scope for improvements:
+
+- Multiple redundant rotations while going long distances along the -x axis.
+- Add logic to stop rendering either when the robot's position is within the tolerance limit or it has stopped moving.
+- May be prone to errors while travelling long distances and very large or very small slopes (y/x).
+
 ## Troubleshooting
 
 In case of an 150 (GLX) error, execute the following command:

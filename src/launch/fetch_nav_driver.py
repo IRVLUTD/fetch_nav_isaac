@@ -46,11 +46,14 @@ class FetchNavDriver:
     def correct_coordinates(self, x, y, current_x, current_y):
         x_correct = x
         y_correct = y
+
         if abs(x - current_x) > self._controller_tolerance:
-            x_correct = x - 0.1 if (x - current_x) < 0 else x + 0.1
+            slope = (y - current_y) / (x - current_x)
+            x_correction = 0.1 * np.cos(np.arctan(slope))
+            x_correct = x - abs(x_correction) if (x - current_x) < 0 else x + abs(x_correction)
             if abs(y - current_y) > self._controller_tolerance:
-                y_correct = y + abs(0.1 * (y - current_y) / (x - current_x)) if (
-                        (y - current_y) > 0) else y - abs(0.1 * (y - current_y) / (x - current_x))
+                y_correction = 0.1 * np.sin(np.arctan(slope))
+                y_correct = y + abs(y_correction) if ((y - current_y) > 0) else y - abs(y_correction)
         elif abs(y - current_y) > self._controller_tolerance:
             y_correct = y - 0.1 if (y - current_y) < 0 else y + 0.1
 
