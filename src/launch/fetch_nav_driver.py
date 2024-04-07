@@ -1,6 +1,7 @@
 from omni.isaac.kit import SimulationApp
 from src.fetch_nav_init.fetch_nav_init import FetchNavInit
 from src.move_fetch.move_fetch import MoveFetch
+from src.sensor_data.sensor_data import SensorData
 import time
 import numpy as np
 class FetchNavDriver:
@@ -10,6 +11,7 @@ class FetchNavDriver:
         self._world = World()
         self._fetch_nav_init = FetchNavInit(self._world)
         self._fetch_nav_controller = MoveFetch(fetch_nav_init=self._fetch_nav_init)
+        self._fetch_sensors = SensorsData(self._fetch_nav_init)
         self._controller_tolerance = self._fetch_nav_controller.position_tolerance
 
         self._fetch_nav_init.simulation_context.initialize_physics()
@@ -21,6 +23,9 @@ class FetchNavDriver:
             self._fetch_nav_init.simulation_context.render()
 
         self._fetch_nav_init.simulation_context.play()
+
+        f_stop = threading.Event()
+        self._fetch_sensors.get_rgb_camera_stream(f_stop)
 
         while True:
             print("Enter 'q' for both the parameters to quit the application")
