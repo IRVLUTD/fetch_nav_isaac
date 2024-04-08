@@ -1,3 +1,5 @@
+import threading
+
 from omni.isaac.kit import SimulationApp
 from src.fetch_nav_init.fetch_nav_init import FetchNavInit
 from src.move_fetch.move_fetch import MoveFetch
@@ -11,7 +13,7 @@ class FetchNavDriver:
         self._world = World()
         self._fetch_nav_init = FetchNavInit(self._world)
         self._fetch_nav_controller = MoveFetch(fetch_nav_init=self._fetch_nav_init)
-        self._fetch_sensors = SensorsData(self._fetch_nav_init)
+        self._fetch_sensors = SensorData(self._fetch_nav_init)
         self._controller_tolerance = self._fetch_nav_controller.position_tolerance
 
         self._fetch_nav_init.simulation_context.initialize_physics()
