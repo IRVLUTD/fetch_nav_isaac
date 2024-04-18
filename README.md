@@ -1,7 +1,7 @@
 # fetch_nav_isaac
 [![Python Version](https://img.shields.io/badge/Python-3.10.13-blue?logo=python)](https://www.python.org/downloads/release/python-1013/)
 [![NVIDIA Isaac Sim](https://img.shields.io/badge/NVIDIA%20Isaac%20Sim-2023.1.1-blue?logo=nvidia)](https://developer.nvidia.com/isaac-sim)
-[![NVIDIA Driver Version](https://img.shields.io/badge/NVIDIA%20Driver-Version%20525.85.05-informational?logo=nvidia)](https://www.nvidia.com/Download/index.aspx)
+[![NVIDIA Driver Version](https://img.shields.io/badge/NVIDIA%20Driver-%20525.85.05-informational?logo=nvidia)](https://www.nvidia.com/Download/index.aspx)
 [![CUDA Version](https://img.shields.io/badge/CUDA-Version%2012.0-%2376B900?logo=nvidia)](https://developer.nvidia.com/cuda-zone)
 
 

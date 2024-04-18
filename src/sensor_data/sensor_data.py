@@ -3,7 +3,6 @@ import time
 import cv2
 import numpy as np
 import requests
-
 from src.fetch_nav_init.fetch_nav_init import FetchNavInit
 
 
@@ -12,6 +11,8 @@ class SensorData:
         self._camera = fetch_nav_init.camera
         self._camera_fps = fetch_nav_init.camera_fps
         self._time = time.time()
+        self._config = fetch_nav_init.config
+        self._port = int(self._config.get("SENSOR_DATA", "sensor_data_handler_port"))
 
     @staticmethod
     def calculate_time(func):
@@ -33,6 +34,7 @@ class SensorData:
         if not f_stop.is_set():
             threading.Timer(1 / self._camera_fps, self.get_rgb_camera_stream, [f_stop]).start()
 
+        # TODO: Add multiprocessing with shared memory for Camera object
         # while not f_stop.is_set():
         #     start = time.time()
         #     frame = np.uint8(camera.get_current_frame()["rgba"])
@@ -41,13 +43,12 @@ class SensorData:
         #     end = time.time()
         #     time.sleep((1 / self._camera_fps) - (end - start) if (1/self._camera_fps) > (end - start) else 0)
 
-    @staticmethod
-    def send_image(frame):
+    def send_image(self, frame):
         _, img_encoded = cv2.imencode('.jpg', frame)
 
         # Convert the encoded image to bytes
         image_bytes = img_encoded.tobytes()
 
         # Send the image to the receiver script
-        response = requests.post('http://localhost:5000/receive_image', files={'image': image_bytes},
+        response = requests.post(f'http://localhost:{self._port}/receive_image', files={'image': image_bytes},
                                  data={"sensor_name": "head_camera"})

@@ -105,6 +105,10 @@ class FetchNavInit:
     def init_frames(self):
         return self._init_frames
 
+    @property
+    def config(self):
+        return self._config
+
     def init_scene(self):
         from omni.isaac.wheeled_robots.robots import WheeledRobot
         self._world.scene.add_default_ground_plane()
