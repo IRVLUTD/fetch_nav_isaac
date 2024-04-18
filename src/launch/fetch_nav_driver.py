@@ -1,11 +1,12 @@
 import threading
-
+import multiprocessing as mp
 from omni.isaac.kit import SimulationApp
 from src.fetch_nav_init.fetch_nav_init import FetchNavInit
 from src.move_fetch.move_fetch import MoveFetch
 from src.sensor_data.sensor_data import SensorData
-import time
 import numpy as np
+
+
 class FetchNavDriver:
     def __init__(self):
         self._simulation_app = SimulationApp(launch_config={"renderer": "RayTracedLighting", "headless": False})
