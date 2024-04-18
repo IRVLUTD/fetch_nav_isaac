@@ -2,6 +2,7 @@ from configparser import ConfigParser
 import os
 import ast
 
+
 class FetchNavInit:
     def __init__(self, world, config_path="./config/config.ini"):
         self._config = ConfigParser()
