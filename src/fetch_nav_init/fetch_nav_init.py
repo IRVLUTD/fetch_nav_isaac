@@ -20,6 +20,7 @@ class FetchNavInit:
         self._camera_prim_path = self._config.get("SENSORS_INIT", "camera_prim_path")
         self._camera_fps = int(self._config.get("SENSORS_INIT", "camera_fps"))
         self._camera_resolution = ast.literal_eval(self._config.get("SENSORS_INIT", "camera_resolution"))
+        self._init_frames = int(self._config.get("FETCH_INIT", "init_frames"))
 
         from omni.isaac.core import SimulationContext
 
@@ -99,6 +100,10 @@ class FetchNavInit:
     @property
     def camera(self):
         return self._camera
+
+    @property
+    def init_frames(self):
+        return self._init_frames
 
     def init_scene(self):
         from omni.isaac.wheeled_robots.robots import WheeledRobot

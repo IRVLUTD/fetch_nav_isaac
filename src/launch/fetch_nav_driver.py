@@ -24,7 +24,7 @@ class FetchNavDriver:
                                                                      diff_move_fetch_callback)
 
         print("Updating the sim app after the initialization...")
-        for _ in range(50):
+        for _ in range(self._fetch_nav_init.init_frames):
             self._fetch_nav_init.simulation_context.render()
 
         self._fetch_nav_init.simulation_context.play()

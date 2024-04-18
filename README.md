@@ -32,6 +32,9 @@ Path to the Isaac Sim python would be of the following format:
 Execute the following script to launch the driver to navigate Fetch:
 `<path to isaac sim python> -m src.launch.fetch_nav_driver`
 
+Execute the following script to launch the sensor data handler's client endpoint for sensor simulation:
+`<path to isaac sim python or other python> -m src.sensor_data.sensor_data_handler`
+
 ### 1. Move Fetch around:
 
 - Enter the global target position coordinates (x, y) in the terminal after executing the python script mentioned above. Enter (q, q) to exit.
@@ -50,15 +53,18 @@ Congratulations, you are now commanding a robot.
 
 ### 2. Sensor Simulation:
 
-- 
+- An RGB camera is attached to the head: `/World/fetch/head_tilt_link/head_camera_link/camera`; of the robot whose configuration
+parameters such as resolution, frame rate, etc. could be set in the config file.
+- Using multithreading, the frames are continuously sent from the `src/sensor_data.py` to an endpoint in `src/sensor_data/sensor_data_handler.py` using
+a POST request. 
+- Thus, the client endpoint receives the raw unprocessed images and also visualizes them. This could also be used to perform perception and other related tasks.
+The output could be sent back to the `src/launch_fetch_nav_driver.py` for the controller to take relevant actions.
+- This could be extended to simulate other sensors such as LiDAR.
 
-Congratulations, you are now commanding a robot.
+#### Scope for improvements:
 
-Scope for improvements:
-
-- Multiple redundant rotations while going long distances along the -x axis.
-- Add logic to stop rendering either when the robot's position is within the tolerance limit or it has stopped moving.
-- May be prone to errors while travelling long distances and very large or very small slopes (y/x).
+- Multiprocessing with shared memory could be used to improve the current limited frame rate due to limited
+compute of multithreading.
 
 ## Troubleshooting
 
