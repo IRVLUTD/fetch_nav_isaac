@@ -1,7 +1,9 @@
+import threading
+import multiprocessing as mp
 from omni.isaac.kit import SimulationApp
 from src.fetch_nav_init.fetch_nav_init import FetchNavInit
 from src.move_fetch.move_fetch import MoveFetch
-import time
+from src.sensor_data.sensor_data import SensorData
 import numpy as np
 
 
@@ -12,6 +14,7 @@ class FetchNavDriver:
         self._world = World()
         self._fetch_nav_init = FetchNavInit(self._world)
         self._fetch_nav_controller = MoveFetch(fetch_nav_init=self._fetch_nav_init)
+        self._fetch_sensors = SensorData(self._fetch_nav_init)
         self._controller_tolerance = self._fetch_nav_controller.position_tolerance
 
         self._fetch_nav_init.simulation_context.initialize_physics()
@@ -21,10 +24,13 @@ class FetchNavDriver:
                                                                      diff_move_fetch_callback)
 
         print("Updating the sim app after the initialization...")
-        for _ in range(50):
+        for _ in range(self._fetch_nav_init.init_frames):
             self._fetch_nav_init.simulation_context.render()
 
         self._fetch_nav_init.simulation_context.play()
+
+        f_stop = threading.Event()
+        self._fetch_sensors.get_rgb_camera_stream(f_stop)
 
         while True:
             print("Enter 'q' for both the parameters to quit the application")
