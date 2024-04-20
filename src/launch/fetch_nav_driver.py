@@ -12,7 +12,7 @@ class FetchNavDriver:
         self._simulation_app = SimulationApp(launch_config={"renderer": "RayTracedLighting", "headless": False})
         from omni.isaac.core import World
         self._world = World()
-        self._fetch_nav_init = FetchNavInit(self._world)
+        self._fetch_nav_init = FetchNavInit(world=self._world, sim_app=self._simulation_app)
         self._fetch_nav_controller = MoveFetch(fetch_nav_init=self._fetch_nav_init)
         self._fetch_sensors = SensorData(self._fetch_nav_init)
         self._controller_tolerance = self._fetch_nav_controller.position_tolerance
@@ -37,7 +37,7 @@ class FetchNavDriver:
             x = input("Enter x: ")
             y = input("Enter y: ")
 
-            if str(x) == str(y) == "q":
+            if str(x) == "q" or str(y) == "q":
                 self._simulation_app.close()
 
             current_x = self._fetch_nav_controller.fetch_position[0]

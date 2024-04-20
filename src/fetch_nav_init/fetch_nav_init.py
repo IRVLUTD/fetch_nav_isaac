@@ -4,7 +4,7 @@ import ast
 
 
 class FetchNavInit:
-    def __init__(self, world, config_path="./config/config.ini"):
+    def __init__(self, world, sim_app, config_path="./config/config.ini"):
         self._config = ConfigParser()
         self._config.read([config_path])
         self._fetch_usd_dir = self._config.get("DIR", "fetch_usd_dir")
@@ -29,6 +29,7 @@ class FetchNavInit:
         self._world = world
         self._fetchbot = None
         self._camera = None
+        self._sim_app = sim_app
 
         self.init_scene()
         self.init_sensors()
@@ -111,7 +112,25 @@ class FetchNavInit:
 
     def init_scene(self):
         from omni.isaac.wheeled_robots.robots import WheeledRobot
-        self._world.scene.add_default_ground_plane()
+        from omni.isaac.core.utils.nucleus import get_assets_root_path, is_file
+        import omni
+        # self._world.scene.add_default_ground_plane()
+        assets_root_path = get_assets_root_path()
+        usd_path = "/Isaac/Environments/Office/office.usd"
+        # omni.usd.get_context().open_stage(assets_root_path + usd_path)
+        from omni.isaac.core.utils.stage import add_reference_to_stage
+        add_reference_to_stage(usd_path=assets_root_path + usd_path, prim_path="/World/env")
+        self._sim_app.update()
+        self._sim_app.update()
+
+        print("Loading stage...")
+        from omni.isaac.core.utils.stage import is_stage_loading
+
+        while is_stage_loading():
+            self._sim_app.update()
+        print("Loading stage Complete")
+
+
         self._fetchbot = self._world.scene.add(WheeledRobot(
                 prim_path=self._fetch_prim_path,
                 name=self._fetch_name,
