@@ -4,7 +4,7 @@ from omni.isaac.kit import SimulationApp
 from src.fetch_nav_init.fetch_nav_init import FetchNavInit
 from src.move_fetch.move_fetch import MoveFetch
 from src.sensor_data.sensor_data import SensorData
-from src.sensor_data.sensor_data import SensorDataType
+from src.synthetic_data.synthetic_data import SyntheticData
 import numpy as np
 
 

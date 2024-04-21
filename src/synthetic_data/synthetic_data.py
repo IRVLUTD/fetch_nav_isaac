@@ -1,3 +1,4 @@
+import numpy as np
 from PIL import Image, ImageDraw
 from src.fetch_nav_init.fetch_nav_init import FetchNavInit
 
@@ -7,10 +8,24 @@ class SyntheticData:
         import omni.replicator.core as rep
 
         self._sdh = sdh
-        self._rp = rep.create.render_product(fetch_nav_init.camera, (512, 512))
-        self._bbox_annot = rep.AnnotatorRegistry.get_annotator("bounding_box_3d", init_params={"semanticTypes": ["class"]})
-        self._bbox_annot.attach(rp)
-        self._camera_params = rep.AnnotatorRegistry.get_annotator("camera_params")
+        self._rp = rep.create.render_product(fetch_nav_init.camera_prim_path, (1280, 720))
+        self._bbox_annot = rep.AnnotatorRegistry.get_annotator("bounding_box_2d_tight", init_params={"semanticTypes": ["class"]})
+        self._bbox_annot.attach(self._rp)
+        self._camera_params = rep.annotators.get("CameraParams").attach(self._rp).get_data()
+
+    def bbox_2d_data(self, image):
+        data = self._bbox_annot.get_data()
+        print(data)
+        draw = ImageDraw.Draw(image)
+
+        for box in data['data']:
+            class_id, x_min, y_min, x_max, y_max, _ = box
+            draw.rectangle([x_min, y_min, x_max, y_max], outline=(255, 0, 0), width=2)
+
+        del draw  # Release the drawing context
+
+        # Save the image using Pillow
+        return image
 
     def bbox_3d_data(self, img):  # assumes a single viewport attached
         data = self._bbox_annot.get_data()
@@ -22,17 +37,17 @@ class SyntheticData:
         corners_3d = corners_3d.reshape(-1, 3)
 
         # Project to image space
-        corners_2d = world_to_image_pinhole(corners_3d, self._camera_params)
+        corners_2d = self.world_to_image_pinhole(corners_3d, self._camera_params)
         corners_2d *= np.array([[width, height]])
 
         # Draw corners on image
-        draw_points(img, corners_2d)
+        self.draw_points(img, corners_2d)
 
         return img
 
     def world_to_image_pinhole(self, world_points, camera_params):
         # Project corners to image space (assumes pinhole camera model)
-        print(camera_params)
+        # print(camera_params)
         proj_mat = camera_params["cameraProjection"].reshape(4, 4)
         view_mat = camera_params["cameraViewTransform"].reshape(4, 4)
         view_proj_mat = np.dot(view_mat, proj_mat)

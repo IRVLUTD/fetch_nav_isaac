@@ -2,6 +2,8 @@ from configparser import ConfigParser
 import os
 import ast
 
+import numpy as np
+
 
 class FetchNavInit:
     def __init__(self, world, sim_app, config_path="./config/config.ini"):
@@ -129,7 +131,14 @@ class FetchNavInit:
         while is_stage_loading():
             self._sim_app.update()
         print("Loading stage Complete")
+        from omni.isaac.core.objects import cuboid
 
+        cuboid = self._world.scene.add(cuboid.VisualCuboid(
+            prim_path="/World/cuboid",
+            position=[4, 0, 0],
+            scale=np.array([0.4, 0.4, 0.4]),
+            color=np.array([1, 0, 1]),
+        ))
 
         self._fetchbot = self._world.scene.add(WheeledRobot(
                 prim_path=self._fetch_prim_path,

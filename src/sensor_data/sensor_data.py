@@ -3,6 +3,8 @@ import time
 import cv2
 import numpy as np
 import requests
+from PIL import Image
+
 from src.fetch_nav_init.fetch_nav_init import FetchNavInit
 from src.synthetic_data.synthetic_data import SyntheticData
 
@@ -29,9 +31,10 @@ class SensorData:
     # @calculate_time
     def get_rgb_camera_stream(self, f_stop):
         frame = np.uint8(self._camera.get_current_frame()["rgba"])
+        frame = self._synthetic_data.bbox_2d_data(Image.fromarray(frame))
+        frame = np.array(frame, dtype=np.uint8)
         frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2BGR)
 
-        frame = self._synthetic_data.bbox_3d_data(frame)
         self.send_image(frame)
 
         if not f_stop.is_set():
